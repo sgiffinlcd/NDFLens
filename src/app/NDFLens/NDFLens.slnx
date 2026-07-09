@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/0-Hosting/">
+    <Project Path="NDFLens.AppHost/NDFLens.AppHost.csproj" />
+    <Project Path="NDFLens.ServiceDefaults/NDFLens.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/1-Global/">
+    <Project Path="NDFLens.Model.App/NDFLens.Model.App.csproj" />
+  </Folder>
+  <Folder Name="/2-UserInterface/">
+    <Project Path="NDFLens.Web/NDFLens.Web.csproj" />
+  </Folder>
+  <Folder Name="/3-Abstraction/">
+    <Project Path="NDFLens.Abstraction.Contracts/NDFLens.Abstraction.Contracts.csproj" />
+    <Project Path="NDFLens.Abstraction.Direct/NDFLens.Abstraction.Direct.csproj" />
+  </Folder>
+  <Folder Name="/4-Service/" />
+  <Folder Name="/5-Logic/">
+    <Project Path="NDFLens.Logic.Contracts/NDFLens.Logic.Contracts.csproj" />
+    <Project Path="NDFLens.Logic/NDFLens.Logic.csproj" />
+  </Folder>
+  <Folder Name="/6-Data/">
+    <Project Path="NDFLens.Data.Contracts/NDFLens.Data.Contracts.csproj" />
+    <Project Path="NDFLens.Data.Sql/NDFLens.Data.Sql.csproj" />
+  </Folder>
+</Solution>

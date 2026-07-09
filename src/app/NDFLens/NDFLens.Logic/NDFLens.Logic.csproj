@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeFactory.NDF" Version="10.26141.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NDFLens.Data.Contracts\NDFLens.Data.Contracts.csproj" />
+    <ProjectReference Include="..\NDFLens.Logic.Contracts\NDFLens.Logic.Contracts.csproj" />
+    <ProjectReference Include="..\NDFLens.Model.App\NDFLens.Model.App.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "src/app/NDFLens/NDFLens.AppHost/NDFLens.AppHost.csproj"
+  }
+}
