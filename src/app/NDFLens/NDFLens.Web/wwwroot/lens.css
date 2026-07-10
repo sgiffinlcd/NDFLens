@@ -1,0 +1,55 @@
+/* Lens log viewer — MudBlazor-native; only fonts and bits with no Mud equivalent live here */
+
+/* Self-hosted fonts (latin subset) */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/inter-v20-latin-regular.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/inter-v20-latin-500.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/inter-v20-latin-600.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/inter-v20-latin-700.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/jetbrains-mono-v24-latin-regular.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/jetbrains-mono-v24-latin-500.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/jetbrains-mono-v24-latin-600.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/jetbrains-mono-v24-latin-700.woff2') format('woff2'); }
+
+/* Monospace utility for log text */
+.lens-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Pulsing live indicator dot (no native Mud equivalent) */
+@keyframes lensPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .4; transform: scale(.82); }
+}
+
+.lens-live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.lens-live-dot.on { animation: lensPulse 1.4s ease-in-out infinite; }
+
+/* "[cF] Lens" logo mark (brand asset, no Mud equivalent) */
+.lens-logo-mark { font: 700 15px 'JetBrains Mono', monospace; letter-spacing: -.5px; white-space: nowrap; }
+.lens-logo-mark .bracket { color: var(--mud-palette-primary); }
+.lens-logo-mark .core { color: var(--mud-palette-text-primary); }
+
+/* Standardized 11.5px font size for all log-grid data cells (text, captions, links, chips) */
+.lens-grid td.mud-table-cell,
+.lens-grid td.mud-table-cell * {
+    font-size: 11.5px; 
+}
+
+
+.mud-input input {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px !important;
+    height: 19.5px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    line-height: 11.5px !important;
+}
+
+.mud-input-control {
+    min-height: unset !important;
+}
+
+.mud-input.mud-input-outlined {
+    padding: 0 8px !important;
+}
+
+/* Selected table row — MudTable has no built-in single-select highlight; RowClassFunc is the documented pattern */
+.lens-selected-row { background: var(--mud-palette-primary-hover) !important; box-shadow: inset 2px 0 0 var(--mud-palette-primary); }

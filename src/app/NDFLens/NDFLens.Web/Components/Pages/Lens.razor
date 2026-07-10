@@ -1,0 +1,229 @@
+@page "/"
+@layout NDFLens.Web.Components.Layout.LensLayout
+@using NDFLens.Model.App
+
+<PageTitle>Lens</PageTitle>
+
+<MudThemeProvider Theme="@LensTheme" IsDarkMode="@_dark" />
+
+@{
+    var filtered = Filtered.ToList();
+}
+
+<MudLayout>
+
+    <MudDrawer @bind-Open="_navExpanded" Variant="DrawerVariant.Mini"
+               ClipMode="DrawerClipMode.Never" Elevation="0" Fixed="true"
+               Width="220px" MiniWidth="62px">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="pa-3">
+            <span class="lens-logo-mark"><span class="bracket">[</span><span class="core">cF</span><span class="bracket">]</span></span>
+            @if (_navExpanded)
+            {
+                <MudText Typo="Typo.h6">Lens</MudText>
+            }
+        </MudStack>
+        <MudDivider />
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="pa-3">
+            <MudBadge Dot="true" Overlap="true" Bordered="true" Color="Color.Success" Origin="Origin.BottomRight">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Rounded="true">AM</MudAvatar>
+            </MudBadge>
+            @if (_navExpanded)
+            {
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body2">Alex Morgan</MudText>
+                    <MudText Typo="Typo.caption" Class="lens-mono mud-text-secondary">online · engineering</MudText>
+                </MudStack>
+            }
+        </MudStack>
+        <MudDivider />
+        <MudNavMenu Class="flex-grow-1">
+            <MudNavLink Icon="@Icons.Material.Filled.MonitorHeart" OnClick="@(() => SetNav("live"))" Class="@NavClass("live")">Live Tail</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Search" OnClick="@(() => SetNav("search"))" Class="@NavClass("search")">Search</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Bookmark" OnClick="@(() => SetNav("views"))" Class="@NavClass("views")">Saved Views</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Notifications" OnClick="@(() => SetNav("alerts"))" Class="@NavClass("alerts")">Alerts</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.BarChart" OnClick="@(() => SetNav("metrics"))" Class="@NavClass("metrics")">Metrics</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Tune" OnClick="@(() => SetNav("settings"))" Class="@NavClass("settings")">Settings</MudNavLink>
+        </MudNavMenu>
+        <MudDivider />
+        <MudNavLink Icon="@(_navExpanded ? Icons.Material.Filled.ChevronLeft : Icons.Material.Filled.ChevronRight)"
+                    OnClick="@(() => _navExpanded = !_navExpanded)">Collapse</MudNavLink>
+    </MudDrawer>
+
+    <MudAppBar Fixed="true" Elevation="0" Gutters="true">
+        <MudTextField T="string" @bind-Value="_query" @bind-Value:after="OnFilterChanged" 
+                      Margin="Margin.None"
+                      Immediate="true" Clearable="true"
+                      Variant="Variant.Outlined" 
+                      Placeholder="Search message, service, path, trace_id…"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" 
+                      Style="font-size: 0.875rem;max-width:440px" />
+
+        <MudChipSet T="LogSeverity" SelectionMode="SelectionMode.MultiSelection"
+                    CheckMark="false" Size="Size.Small" Variant="Variant.Text"
+                    @bind-SelectedValues="_selectedLevels" @bind-SelectedValues:after="OnFilterChanged"
+                    Class="ml-3">
+            @foreach (var level in AllLevels)
+            {
+                <MudChip T="LogSeverity" Value="@level" Color="@LevelColor(level)" Class="lens-mono">
+                    @LevelLabel(level) (@CountFor(level))
+                </MudChip>
+            }
+        </MudChipSet>
+
+        @if (_traceFilter is not null)
+        {
+            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+                     OnClose="@(_ => ClearTrace())" Class="lens-mono">
+                trace @Truncate(_traceFilter, 12)
+            </MudChip>
+        }
+
+        <MudSpacer />
+
+        
+        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                    <MudChip T="string" Size="Size.Small" Color="@EnvColor(_source.Environment)" Variant="Variant.Text" Class="mr-2">
+                        @_source.Environment.ToUpperInvariant()
+                    </MudChip>
+                    @_source.Name
+                </MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                @foreach (var src in Sources)
+                {
+                    <MudMenuItem OnClick="@(() => SelectSource(src))">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudChip T="string" Size="Size.Small" Color="@EnvColor(src.Environment)" Variant="Variant.Text">
+                                @src.Environment.ToUpperInvariant()
+                            </MudChip>
+                            <MudText Typo="Typo.body1">@src.Name</MudText>
+                        </MudStack>
+                    </MudMenuItem>
+                }
+            </ChildContent>
+        </MudMenu>
+
+        <MudToggleGroup T="bool" @bind-Value="_paged" @bind-Value:after="OnFilterChanged"
+                        Outlined="true" Color="Color.Primary" Class="mx-3">
+            <MudToggleItem T="bool" Value="false" Text="Live" />
+            <MudToggleItem T="bool" Value="true" Text="Paged" />
+        </MudToggleGroup>
+
+        <MudText Typo="Typo.caption" Class="lens-mono mud-text-secondary mr-2">
+            @filtered.Count / @_logs.Count
+        </MudText>
+
+        @if (!_paged)
+        {
+            <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                       Color="@(_live ? Color.Success : Color.Default)"
+                       OnClick="@(() => _live = !_live)" Class="mr-2">
+                <span class="lens-live-dot @(_live ? "on" : null) mr-2"></span>@(_live ? "Live" : "Paused")
+            </MudButton>
+        }
+
+        <MudTooltip Text="Clear buffer">
+            <MudIconButton Icon="@Icons.Material.Outlined.Delete" OnClick="ClearLogs" />
+        </MudTooltip>
+        <MudTooltip Text="Toggle theme">
+            <MudIconButton Icon="@(_dark ? Icons.Material.Filled.LightMode : Icons.Material.Outlined.DarkMode)"
+                           OnClick="@(() => _dark = !_dark)" />
+        </MudTooltip>
+    </MudAppBar>
+
+    <MudDrawer Anchor="Anchor.End" Variant="DrawerVariant.Persistent"
+               ClipMode="DrawerClipMode.Always" Elevation="0" Width="430px"
+               Open="@(SelectedEntry is not null)">
+        @if (SelectedEntry is { } selected)
+        {
+            <MudStack Class="pa-4" Spacing="3" Style="height:100%; overflow:auto">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudChip T="string" Size="Size.Medium" Variant="Variant.Text"
+                             Color="@LevelColor(selected.Level)" Class="lens-mono">@LevelLabel(selected.Level)</MudChip>
+                    <MudSpacer />
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.ContentCopy"
+                               OnClick="@(() => CopyTraceAsync(selected))">
+                        @(_copied ? "Copied ✓" : "Copy trace")
+                    </MudButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                                   OnClick="@(() => _selectedId = null)" />
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="lens-mono">@selected.Message</MudText>
+                <MudText Typo="Typo.caption" Class="lens-mono mud-text-secondary">trace_id @selected.TraceId</MudText>
+                <MudDivider />
+                <MudText Typo="Typo.overline">Metadata</MudText>
+                <MudSimpleTable Dense="true" Bordered="false" Elevation="0">
+                    <tbody>
+                        @foreach (var (key, value) in MetadataFor(selected))
+                        {
+                            <tr>
+                                <td class="lens-mono mud-text-secondary">@key</td>
+                                <td class="lens-mono">@value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                <MudText Typo="Typo.overline">Raw event</MudText>
+                <MudPaper Outlined="true" Class="pa-3 overflow-auto">
+                    <pre class="lens-mono ma-0">@BuildJson(selected)</pre>
+                </MudPaper>
+            </MudStack>
+        }
+    </MudDrawer>
+
+    <MudMainContent Class="pt-16" Style="height:100vh">
+        <MudTable T="LogEntry" Items="@filtered" Class="lens-grid"
+                  Dense="true" Hover="true" FixedHeader="true" Elevation="0"
+                  Height="calc(100vh - 130px)"
+                  RowsPerPage="@PageSize" @bind-CurrentPage="_page"
+                  OnRowClick="RowClicked" RowClassFunc="RowClass"
+                  PagerContent="@(_paged ? _pagerFragment : null)">
+            <HeaderContent>
+                <MudTh>Time</MudTh>
+                <MudTh>Level</MudTh>
+                <MudTh>Service</MudTh>
+                <MudTh>Message</MudTh>
+                <MudTh>Trace Id</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Time"><span class="lens-mono mud-text-secondary">@context.Timestamp.ToString("HH:mm:ss.fff")</span></MudTd>
+                <MudTd DataLabel="Level">
+                    <MudText Typo="Typo.body1" Class="lens-mono" Color="@LevelColor(context.Level)">@context.Level</MudText>
+                    @* <MudChip T="string" Size="Size.Small" Variant="Variant.Text"
+                             Color="@LevelColor(context.Level)" Class="lens-mono">@LevelLabel(context.Level)</MudChip> *@
+                </MudTd>
+                <MudTd DataLabel="Service"><span class="lens-mono mud-text-secondary">@context.Service</span></MudTd>
+                <MudTd DataLabel="Message">
+                    <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="0" Class="overflow-hidden">
+                        <span class="lens-mono text-truncate">@context.Message</span>
+                        <MudText Typo="Typo.caption" Class="lens-mono mud-text-secondary flex-shrink-0">@context.Status · @(context.DurationMs)ms</MudText>
+                    </MudStack>
+                </MudTd>
+                <MudTd DataLabel="Trace Id">
+                    <span @onclick="() => FilterTrace(context.TraceId)" @onclick:stopPropagation="true">
+                        <MudLink Typo="Typo.caption" Underline="Underline.Hover" Class="lens-mono">
+                            @Truncate(context.TraceId, 18)
+                        </MudLink>
+                    </span>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudStack AlignItems="AlignItems.Center" Class="pa-16">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Default" />
+                    <MudText Typo="Typo.body2">No matching log lines</MudText>
+                    <MudText Typo="Typo.caption" Class="lens-mono mud-text-secondary">Adjust your search or level filters</MudText>
+                </MudStack>
+            </NoRecordsContent>
+        </MudTable>
+    </MudMainContent>
+
+</MudLayout>
+
+@code {
+    private RenderFragment _pagerFragment =>
+        @<MudTablePager PageSizeOptions="@(new[] { PageSize })" HideRowsPerPage="true"
+                        InfoFormat="{first_item}-{last_item} of {all_items}" />;
+}
