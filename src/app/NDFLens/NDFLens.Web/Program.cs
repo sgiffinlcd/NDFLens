@@ -1,3 +1,4 @@
+using MudBlazor.Services;
 using NDFLens.Web;
 using NDFLens.Web.Components;
 
@@ -5,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+
+// Add MudBlazor services.
+builder.Services.AddMudServices();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

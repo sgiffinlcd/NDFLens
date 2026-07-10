@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="CodeFactory.NDF" Version="10.26141.1" />
+    <PackageReference Include="MudBlazor" Version="9.7.0" />
   </ItemGroup>
 
   <ItemGroup>
